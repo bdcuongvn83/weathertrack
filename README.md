@@ -1,4 +1,10 @@
 # weathertrack (can search by location name, please change dropdown Timezone according to location first) 
+
+
+
+https://github.com/user-attachments/assets/db6100d6-068a-4a84-a871-654cb68836a5
+
+
 ## 1. Start project
 ![image](https://github.com/user-attachments/assets/ae03d61c-7eed-42e0-86f1-33e6e271ad48)
 
