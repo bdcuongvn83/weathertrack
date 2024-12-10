@@ -1,0 +1,467 @@
+﻿@* 
+    Author: DUC CUONG BUI
+    Email: bdcuongvn83@gmail.com
+    Release Version: 2024
+*@
+
+@page
+@model weathertrack.Pages.WeatherChartModel
+@{
+	ViewData["CustomCss"] = "./css/WeatherChart.css";
+}
+<script type="text/javascript"
+		src="https://www.gstatic.com/charts/loader.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.34/moment-timezone-with-data.min.js"></script>
+
+
+<script type="text/javascript">
+
+	// Mapping from offset to timezone names (just a few examples)
+	const offsetToTimezone = {
+		'+00:00': 'UTC',
+		'+01:00': 'Europe/Paris',
+		'+02:00': 'Europe/Athens',
+		'+03:00': 'Africa/Nairobi',
+		'+04:00': 'Asia/Dubai',
+		'+05:00': 'Asia/Karachi',
+		'+06:00': 'Asia/Dhaka',
+		'+07:00': 'Asia/Bangkok',
+		'+08:00': 'Asia/Singapore',
+		'+09:00': 'Asia/Tokyo',
+		'+09:30': 'Australia/Adelaide',
+		'+10:00': 'Australia/Sydney',
+		'+11:00': 'Pacific/Noumea',
+		'+12:00': 'Pacific/Auckland',
+		'-12:00': 'Pacific/Apia',
+		'-11:00': 'Pacific/Midway',
+		'-10:00': 'America/Los_Angeles',
+		'-09:00': 'America/Anchorage',
+		'-08:00': 'America/Chicago',
+		'-07:00': 'America/Denver',
+		'-06:00': 'America/New_York',
+		'-05:00': 'America/Indianapolis',
+		'-04:00': 'America/Houston',
+		'-03:00': 'America/Argentina/Buenos_Aires',
+		'-02:00': 'Atlantic/Azores',
+		'-01:00': 'Atlantic/Cape_Verde'
+	};
+	
+
+	// Handle form submission (triggered on search)
+	 function searchData() {
+		// Get form data
+
+		const formData = new FormData(document.getElementById('bookForm'));
+		// Perform AJAX request
+		fetch('/WeatherChart?handler=Search', {
+			method: 'POST',
+			body: formData,
+		})
+		.then(response => {
+
+			if (!response.ok) {
+				throw new Error('Failed to fetch data from server');
+			}
+
+			//return response.text(); // Assuming server returns partial HTML
+			return response.json();
+		})
+		.then(data => {
+
+			// Update the result list
+			refreshChart(data);
+		})
+		.catch(error => {
+			console.error('Error:', error);
+			alert('An error occurred while searching.');
+		});
+	}
+
+	function getData(weatherData){
+
+		// let weatherData = {
+		// 	"timelines": {
+		// 		"hourly": [
+		// 			{
+		// 				"time": "2024-11-26T00:00:00Z",
+		// 				"values": {
+		// 					"freezingRainIntensity": 0,
+		// 					"humidity": 80,
+		// 					"snowIntensity": 0,
+		// 					"precipitationProbability": 20,
+		// 					"rainAccumulation": 0.09,
+		// 					"rainAccumulationLwe": 0.04,
+		// 					"rainIntensity": 0.50,
+		// 					"temperature": 24.31,
+		// 					"temperatureApparent": 24.31,
+		// 					"uvHealthConcern": 1,
+		// 					"uvIndex": 2,
+		// 					"windSpeed": 3.13,
+		// 					"cloudCover": 67.97,
+		// 					"weatherCode": 1102
+		// 				}
+		// 			},
+		// 			{
+		// 				"time": "2024-11-26T01:00:00Z",
+		// 				"values": {
+		// 					"freezingRainIntensity": 0,
+		// 					"humidity": 85,
+		// 					"snowIntensity": 0,
+		// 					"precipitationProbability": 20,
+		// 					"rainAccumulation": 0.09,
+		// 					"rainAccumulationLwe": 0.04,
+		// 					"rainIntensity": 0.49,
+		// 					"temperature": 26.31,
+		// 					"temperatureApparent": 24.31,
+		// 					"uvHealthConcern": 1,
+		// 					"uvIndex": 2,
+		// 					"windSpeed": 3.13,
+		// 					"cloudCover": 67.97,
+		// 					"weatherCode": 1102
+		// 				}
+		// 			},
+		// 			{
+		// 				"time": "2024-11-26T02:00:00Z",
+		// 				"values": {
+		// 					"freezingRainIntensity": 0,
+		// 					"humidity": 84,
+		// 					"snowIntensity": 0,
+		// 					"precipitationProbability": 20,
+		// 					"rainAccumulation": 0.09,
+		// 					"rainAccumulationLwe": 0.04,
+		// 					"rainIntensity": 0.50,
+		// 					"temperature": 28.31,
+		// 					"temperatureApparent": 24.31,
+		// 					"uvHealthConcern": 1,
+		// 					"uvIndex": 2,
+		// 					"windSpeed": 3.13,
+		// 					"cloudCover": 67.97,
+		// 					"weatherCode": 1102
+		// 				}
+		// 			},
+		// 			{
+		// 				"time": "2024-11-30T22:00:00Z",
+		// 				"values": {
+		// 					"freezingRai6Intensity": 0,
+		// 					"humidity": 80,
+		// 					"snowIntensity": 0,
+		// 					"precipitationProbability": 20,
+		// 					"rainAccumulation": 0.09,
+		// 					"rainAccumulationLwe": 0.04,
+		// 					"rainIntensity": 0.50,
+		// 					"temperature": 24.31,
+		// 					"temperatureApparent": 24.31,
+		// 					"uvHealthConcern": 1,
+		// 					"uvIndex": 2,
+		// 					"windSpeed": 3.13,
+		// 					"cloudCover": 67.97,
+		// 					"weatherCode": 1102
+		// 				}
+		// 			}
+		// 		]
+		// 	},
+		// 	"location": {
+		// 		"lat": -25.163501739501953,
+		// 		"lon": 136.75502014160156,
+		// 		"name": "Australia",
+		// 		"type": "continent"
+		// 	}
+		// };
+
+			// Extracting the data
+		let extractedData = weatherData.timelines.hourly.map(entry => {
+		  return {
+			time: entry.time,
+			precipitationProbability: entry.values.precipitationProbability,
+			temperature: entry.values.temperature,
+			humidityAvg: entry.values.humidityAvg,
+			rainIntensity: entry.values.rainIntensity,
+			snowIntensity: entry.values.snowIntensity,
+			windSpeed: entry.values.windSpeed,
+			cloudCover: entry.values.cloudCover,
+			weatherCode: entry.values.weatherCode,
+			};
+		});
+
+
+		return extractedData;
+	}
+
+	function adjustToUTCOffset(utcDate, offset) {
+		//var time = new Date(utcDate).getTime();
+		var date = new Date(utcDate);
+		console.log("before:" + date.toISOString()); // Still UTC+8, no DST applied
+		date.setUTCHours(date.getUTCHours() + 8);
+		console.log("after +8:" + date.toISOString()); // Still UTC+8, no DST applied
+		return date;
+	}
+
+
+	/**
+	 * values {precipitationProbability, rainIntensity,
+	 *  snowIntensity, windSpeed,cloudCover, weatherCode}
+	 *
+	 * result value :
+	 *	1: Light Rain
+	 *	2: middle Rain
+	 *	3: Heavy Rain
+	 *	4: Snow
+	 *	5. Storm
+	 *	6:Sunny
+	 *	7.Cloudy
+	 *	8.Clear
+	 */
+	function determineWeather(values) {
+		const { precipitationProbability, rainIntensity, snowIntensity, windSpeed, cloudCover, weatherCode } = values;
+
+		if (precipitationProbability > 50 && rainIntensity >= 0.1 && rainIntensity < 2) {
+			return 1; //'Light Rain';
+		} else if (precipitationProbability > 50 && rainIntensity >= 2 && rainIntensity < 10) {
+			return 2; //'middle Rain';
+		} else if (precipitationProbability > 50 && rainIntensity > 10) {
+			return 3;//'Heavy Rain';
+		} else if (snowIntensity > 0) {
+			return 4; //'Snow';
+		} else if (windSpeed > 20) {
+			return 5; //'Storm';
+		} else if (cloudCover < 20) {
+			return 6; //'Sunny';
+		} else if (cloudCover >= 50) {
+			return 7; //'Cloudy';
+		} else {
+			return 0;//'Clear';
+		}
+	}
+
+	function getWeatherIcon(value) {
+		const weatherIcons = {
+			1: '🌦️', // Light Rain
+			2: '🌧️', // Moderate Rain
+			3: '⛈️', // Heavy Rain
+			4: '❄️', // Snow
+			5: '🌪️', // Storm
+			6: '☀️', // Sunny
+			7: '☁️', // Cloudy
+			0: '🌡️'  // Default/Unknown
+		};
+
+		return weatherIcons[value] || weatherIcons[0];
+	}
+
+
+	function refreshChart(dataRaw) {
+		// replace information for new location name.
+		const container = document.getElementById('mychartParent');
+		const locationName = dataRaw?.location?.name;
+
+		// Tạo nội dung HTML động từ dữ liệu JSON
+		container.innerHTML = `
+			<div class="location-container"> <h3>LocationName: ${locationName}</h3></div>
+			<div id="mychart1"></div>
+		`;
+		// draw chart
+
+		google.charts.load('current', {'packages':['corechart', 'line']});
+		google.charts.setOnLoadCallback(function() {
+			drawChart(dataRaw);  // Pass data to the drawChart method
+		});
+
+	}
+
+	function drawChart(dataRaw) {
+	
+		// Dữ liệu JSON
+			
+			var dataRaw = getData(dataRaw);
+			var dataTable = new google.visualization.DataTable();
+			dataTable.addColumn('datetime', 'Time');
+			dataTable.addColumn('number', 'Value');
+			dataTable.addColumn({type: 'string', role: 'annotation'}); // annotation role
+
+			dataTable.addColumn({type: 'string', role: 'tooltip'}); // Tooltip role
+
+			const offset = document.getElementById('timezone-offset').value;
+
+			dataRaw.forEach(item => {
+			  //console.log(`At ${data.time}, it is ${data.temperature}°C.`);
+				let currentDate = new Date();
+				let inputDate = new Date(item.time);
+
+				  // Extract the hour
+				  var hour = inputDate.getUTCHours(); // Use getUTCHours for UTC
+
+				  var convertToTimezone = convertTimezone(item.time, offset);
+				  let convertInputDate = new Date(convertToTimezone);
+
+				  // console.log(`At ${convertToTimezone}, it is ${item.temperature}°C.`);
+				  //  console.log(`convertInputDate : At ${convertInputDate}`);
+
+
+				  var values = {
+					  precipitationProbability: item.precipitationProbability ,
+					  rainIntensity: item.rainIntensity,
+					  snowIntensity:item.snowIntensity,
+					  windSpeed:item.windSpeed,
+					  cloudCover:item.cloudCover,
+					  weatherCode:item.weatherCode
+				  };
+
+				  var weatherStatus = determineWeather(values);
+				  var weatherIcon = getWeatherIcon(weatherStatus);
+				  dataTable.addRow([convertInputDate, item.temperature, weatherIcon, `At ${convertToTimezone}, it is ${item.temperature}°C.`]);
+
+
+			});
+		// Tính toán chiều cao dựa trên 60% chiều cao màn hình
+		var chartHeight = Math.round(window.innerHeight * 0.8); // 70% chiều cao màn hình
+		var chartWidth = Math.round(window.innerWidth * 0.8);
+		console.log("chartHeight:" + chartHeight);
+
+		const now = new Date();  // Tạo đối tượng Date cho thời gian hiện tại
+		console.log("convertOffsetToTimezone(offset):" + convertOffsetToTimezone(offset));
+
+		var options = {
+		  title: 'Weather Forecast with Automatic Time Intervals',
+		  curveType: 'function',
+		  legend: { position: 'bottom' },
+
+			hAxis: {
+				title: 'Time',
+				format: 'HH:mm a',
+				gridlines: { count: 25 },
+				timezone: convertOffsetToTimezone(offset) , // Using the function to convert offset to timezoneconvertOff
+				viewWindow: {
+				  min: now, // Bắt đầu từ giờ hiện tại
+				  max: new Date(now.getTime() + 24 * 60 * 60 * 1000) // Kết thúc sau 24 giờ
+				}
+		  },
+
+		  vAxis: {
+			title: 'Temperature (°F)'
+		  },
+		   width: chartWidth,
+		   height: chartHeight, // Đặt chiều cao cụ thể
+
+
+		};
+
+		/*
+		var data = google.visualization.arrayToDataTable([
+			['Time', 'Value', { role: 'annotation' }],
+			[new Date(0, 0, 0, 1), 1, '🌞'], // 1AM, trời nắng
+			[new Date(0, 0, 0, 2), 2, '☔'], // 2AM, trời mưa
+			[new Date(0, 0, 0, 3), 3, '☁'], // 3AM, trời nhiều mây
+			[new Date(0, 0, 0, 4), 4, '🌞'], // 4AM, trời nắng
+			[new Date(0, 0, 0, 5), 5, '❄'], // 5AM, trời tuyết
+			[new Date(0, 0, 0, 6), 6, '🌙'], // 6AM, trời tối
+			// Thêm các dữ liệu khác tương tự...
+			[new Date(0, 0, 0, 24), 24, '🌞'], // 12AM
+		]);
+		*/
+
+		var chart = new google.visualization.LineChart(
+		document.getElementById('mychart1'));
+		chart.draw(dataTable, options);
+
+	}
+
+	function convertTimezone(timevalue, offset){
+
+			// Giờ UTC
+			console.log("timevalue:");
+			console.log(timevalue);
+			var utcTime = moment.utc(timevalue);
+
+			// Convert UTC time to the selected timezone using Moment.js
+			const convertedTime = utcTime.clone().add(offset, 'hours'); // Add the selected offset to the UTC time
+
+			console.log("dest time:", convertedTime.format("YYYY-MM-DD HH:mm:ss"));
+			return convertedTime.format("YYYY-MM-DD HH:mm:ss");
+		}
+
+
+	// Function to convert offset to timezone
+	function convertOffsetToTimezone(offset) {
+		return offsetToTimezone[offset] || null;
+	}
+
+	// Hàm chuyển đổi từ Celsius sang Fahrenheit
+	function celsiusToFahrenheit(celsius) {
+	  return (celsius * 9/5) + 32;
+	}
+</script>
+<body>
+
+	<div class="container">
+		<div class="search-box">
+			<form name="bookForm" class="form-container" id="bookForm" method="post">
+				<div class="timezone-container">
+					<input type="text" id="locationName" name="locationName" placeholder="Search cities in Australia">
+					<!-- Timezone Dropdown -->
+					<select name="timezone_offset" id="timezone-offset">
+
+						<option value="-12:00">(GMT -12:00) Eniwetok, Kwajalein</option>
+						<option value="-11:00">(GMT -11:00) Midway Island, Samoa</option>
+						<option value="-10:00">(GMT -10:00) Hawaii</option>
+						<option value="-09:50">(GMT -9:30) Taiohae</option>
+						<option value="-09:00">(GMT -9:00) Alaska</option>
+						<option value="-08:00">(GMT -8:00) Pacific Time (US &amp; Canada)</option>
+						<option value="-07:00">(GMT -7:00) Mountain Time (US &amp; Canada)</option>
+						<option value="-06:00">(GMT -6:00) Central Time (US &amp; Canada), Mexico City</option>
+						<option value="-05:00">(GMT -5:00) Eastern Time (US &amp; Canada), Bogota, Lima</option>
+						<option value="-04:50">(GMT -4:30) Caracas</option>
+						<option value="-04:00">(GMT -4:00) Atlantic Time (Canada), Caracas, La Paz</option>
+						<option value="-03:50">(GMT -3:30) Newfoundland</option>
+						<option value="-03:00">(GMT -3:00) Brazil, Buenos Aires, Georgetown</option>
+						<option value="-02:00">(GMT -2:00) Mid-Atlantic</option>
+						<option value="-01:00">(GMT -1:00) Azores, Cape Verde Islands</option>
+						<option value="+00:00">(GMT) Western Europe Time, London, Lisbon, Casablanca</option>
+						<option value="+01:00">(GMT +1:00) Brussels, Copenhagen, Madrid, Paris</option>
+						<option value="+02:00">(GMT +2:00) Kaliningrad, South Africa</option>
+						<option value="+03:00">(GMT +3:00) Baghdad, Riyadh, Moscow, St. Petersburg</option>
+						<option value="+03:50">(GMT +3:30) Tehran</option>
+						<option value="+04:00">(GMT +4:00) Abu Dhabi, Muscat, Baku, Tbilisi</option>
+						<option value="+04:50">(GMT +4:30) Kabul</option>
+						<option value="+05:00">(GMT +5:00) Ekaterinburg, Islamabad, Karachi, Tashkent</option>
+						<option value="+05:50">(GMT +5:30) Bombay, Calcutta, Madras, New Delhi</option>
+						<option value="+05:75">(GMT +5:45) Kathmandu, Pokhara</option>
+						<option value="+06:00">(GMT +6:00) Almaty, Dhaka, Colombo</option>
+						<option value="+06:50">(GMT +6:30) Yangon, Mandalay</option>
+						<option value="+07:00">(GMT +7:00) Bangkok, Hanoi, Jakarta</option>
+						<option value="+08:00">(GMT +8:00) Beijing, Perth, Singapore, Hong Kong</option>
+						<option value="+08:75">(GMT +8:45) Eucla</option>
+						<option value="+09:00">(GMT +9:00) Tokyo, Seoul, Osaka, Sapporo, Yakutsk</option>
+						<option value="+09:50">(GMT +9:30) Adelaide, Darwin</option>
+						<option value="+10:00" selected="selected">(GMT +10:00) Eastern Australia, Guam, Vladivostok</option>
+						<option value="+10:50">(GMT +10:30) Lord Howe Island</option>
+						<option value="+11:00">(GMT +11:00) Magadan, Solomon Islands, New Caledonia</option>
+						<option value="+11:50">(GMT +11:30) Norfolk Island</option>
+						<option value="+12:00">(GMT +12:00) Auckland, Wellington, Fiji, Kamchatka</option>
+						<option value="+12:75">(GMT +12:45) Chatham Islands</option>
+						<option value="+13:00">(GMT +13:00) Apia, Nukualofa</option>
+						<option value="+14:00">(GMT +14:00) Line Islands, Tokelau</option>
+					</select>
+				</div>
+				<div>
+					<button id="searchButton" type="button" class="btn form-button btn-info form-button" onclick="searchData()">
+						Search
+					</button>
+				</div>
+
+			</form>
+		</div>
+
+		<div class="result-container" id="result-container">
+			<!-- Phần kết quả tìm kiếm (ví dụ: chart) sẽ được hiển thị ở đây -->
+			<div class="result-container-chart" id="mychartParent">
+			</div>
+		</div>
+	</div>
+</body>
+
+
+
+
+

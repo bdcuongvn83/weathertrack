@@ -1,0 +1,18 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="./css/site.css" asp-append-version="true" />
+    <title>@ViewBag.Title</title>
+    @if (ViewData["CustomCss"] != null)
+    {
+        <link rel="stylesheet" href="@ViewData["CustomCss"]" />
+    }
+</head>
+<body>
+    <div>
+        @RenderBody()
+    </div>
+</body>
+</html>
