@@ -1,6 +1,6 @@
-# weathertrack (can search by location name, please change dropdown Timezone according to location first) 
-
-
+# Weather Forecast 
+24-Hour Weather Forecast by Location with Dynamic Timezone & Google Chart Visualization
+- can search by location name, please change dropdown Timezone according to location first
 
 https://github.com/user-attachments/assets/db6100d6-068a-4a84-a871-654cb68836a5
 
